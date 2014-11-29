@@ -1,0 +1,82 @@
+/* contact */
+.col_mainInner{height: 100%; position: relative;}
+.col_main{ background-color: #fff; border-radius: 3px; height: 100%; margin: 0 auto; overflow: auto;}
+.contact_view .contact_box { position: absolute; left: 0; right: 0; top: 45px; bottom: 0; }
+.contact_view .tree_box { width: 260px; background-color: #f8f8f8; overflow: auto; position: absolute; top: 0; bottom: 0; }
+.contact_view .tree_list{ background-color: #fff; border-left: 1px solid #dedddf; bottom: 0; left: 260px; overflow: auto; position: absolute; right: 0; top: 0; z-index: 0;}
+.member_list { margin: 0; padding: 0; }
+.member_list li { position: relative; vertical-align: middle; line-height: 28px; border-bottom: 1px solid #e5e5e5; padding: 5px 0; cursor: pointer; display: inline-block; width: 100%; }
+.member_list p { margin: 0; }
+.member_list, .tree_list .title_bar { min-width: 800px; }
+.title_bar { height: 32px; line-height: 32px; border-bottom: 1px solid #E7E7E7; }
+.checkbox_node, .title .checkbox_node { display: inline-block; height: 30px; min-width: 40px; width: 6%; vertical-align: middle; }
+.member_list li .checkbox, .title .checkbox { margin: 1px 0 0 20px; vertical-align: middle; }
+.tree_list .account, .tree_list .mail, .tree_list .name, .tree_list .phone, .tree_list .position, .tree_list .state { display: inline-block; padding-right: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+.tree_list .name { width: 16%; min-width: 90px; }
+.tree_list .account, .tree_list .position { width: 12%; min-width: 80px; }
+.tree_list .phone { width: 12%; min-width: 100px; }
+.tree_list .mail { width: 15%; min-width: 150px; }
+.tree_list .state { float: right; min-width: 40px; padding-right: 20px; text-align: center; width: 8%; }
+.tree_list .state .dropdown{position: absolute;right: 31px;top: -1px;}
+.tree_list .title_link {height: 30px!important;}
+.member_list li .state {color: #72808e;}
+.member_list li .face { display: inline-block; width: 30px; height: 30px; margin: 0 6px 0 2px; background: #ccc;vertical-align: middle; border: 1px solid #cdcdcd; border-radius: 2px; }
+.member_list .checkbox_node { height: auto; }
+.title .name { margin-left: 44px; }
+.tool_bar { position: relative; height: 44px; line-height: 44px; padding: 0 10px; text-align: center; border-bottom: 1px solid #ccc; background: #eaeaea; background: -webkit-linear-gradient(top, #f3f3f3, #eee); background: -moz-linear-gradient(top, #f3f3f3, #eee); background: linear-gradient(top, #f3f33f, #eee) }
+.tool_bar_simple { margin-right: 400px }
+.tool_bar .bar_left { float: left }
+.tool_bar .bar_right_list_title { position: absolute; left: 50%; margin-left: 130px }
+.tool_bar .bar_right_leftbutton { float: left }
+.tool_bar .bar_right_text-title { float: left;margin-left: 14px;}
+.tool_bar .bar_right_control{float:left;}
+.tool_bar .bar_right_sch{float:left;float: left;margin-left: 40px;}
+.tool_bar .bar_left_withborder { height: 100%; border-right: 1px solid #ccc }
+.bar_left_withborder a { padding: 0 20px 0 0; display: block }
+.tool_bar .bar_right_search { line-height: 44px; height: 44px; position: absolute; left: 50%; margin-left: -200px }
+.bar_right_search .toolbar_search_form .input_text { width: 400px; padding-right: 30px; padding-left: 5px; margin-top: 7px }
+.tool_bar .toolbar_search_add_box { border-right: 1px solid #ccc; width: 251px; height: 44px }
+.toolbar_search_add_box .toolbar_search_form { position: absolute; left: 10px }
+.toolbar_search_add_box .toolbar_search_form .input_text { width: 200px; padding-left: 10px; padding-right: 30px }
+.tool_bar .bar_panel_wrap { position: absolute; left: 0; border-right: 1px solid #ccc; width: 210px }
+.tool_bar .tool_bar_add { float: right; margin-right: 15px; vertical-align: -5px; opacity: .7; filter: alpha(opacity=70) }
+.tool_bar .tool_bar_search { float: right; margin-right: 15px }
+.tool_bar .icon_search { vertical-align: -5px }
+.tool_bar .bar_right { float: right }
+.tool_bar .page_title { width: 50%; position: absolute; left: 25%; font-weight: 400; text-align: center; color: #222; font-size: 16px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis }
+.tool_bar a.page_title { width: 7em; overflow: visible; left: 50%; margin-left: -3.5em }
+.tool_bar .page_title:hover { text-decoration: none; cursor: default }
+.tool_bar a.page_title:hover { text-decoration: none; cursor: pointer }
+.tool_bar .page_title .icon_lock, .tool_bar .page_title .icon_questionmask { display: none }
+.tool_bar a.tree_selected_title { left: 0; margin-left: 0; text-align: left; float: left }
+
+/* user info */
+.u_info{padding: 40px;}
+.u_info .item{margin: 0; padding: 0;}
+.u_info .item-left{line-height: 24px;}
+.u_info .item-right{line-height: 24px; position: relative;}
+.u_info .u_top{padding-bottom: 35px;}
+.u_info .u_top .item-left{margin-right: 20px;}
+.u_info .u_name{font-size: 24px; font-weight: 700; line-height: 120%; padding-bottom: 5px;}
+.u_info .u_bottom .item-left{width:80px;margin-right: 20px; text-align: right; color: #999;}
+.u_info .u_status{position:absolute; right:0; top:0; font-size: 12px; background: #ddd; height: 24px; line-height: 24px; padding: 0 5px;}
+.u_info .u_saveInfor{position:absolute;top: 115px;right: 39px;font-size: 14px;background: #DDD;border: none;height: 24px;line-height: 24px;padding: 0px 9px;cursor:pointer;}
+.userinfo-panel-foot{margin-bottom: 32px;margin-left: 43px;height: 51px;padding: 10px 0px;box-sizing: border-box;font-weight: bold;}
+.userinfo-panel-foot .userinfo-panel-btn{margin-left:4px;}
+.pannel-foot .more{display: inline;}
+.department{position:relative;}
+.department .departmentThird{position:absolute;left: 100px;top: 31px;}
+
+/* create user */
+.create_user{padding:15px 49px}
+.create_user_head .user_avatar{float:left;margin-right:30px;}
+.create_user_head .user_tt{float:left;}
+.create_user_tt{color:#918F8F;font-weight:normal;}
+.create_user .create_user_tt span{margin-right: 4px;color: #9A9AD5;}
+.create_user .tagsList{position:relative;}
+.create_user .tagsReminds{position:absolute;width: 200px;text-align: center;line-height: 27px;top: 32px;left: 0px;padding:0;background: #FFF;z-index: 9999;border: 1px solid #DFD8D8;border-top: none;}
+.create_user .tagsReminds li{cursor:pointer;}
+.create_user .tagsReminds li:hover{background: rgba(226, 217, 217, 0.4);}
+ /* import contact */
+.upload-contact .btn-box{position: relative;}
+.upload-contact .upload-cus{position: absolute;min-height: 100%;min-width: 100%;top: 0;left: 0;z-index: 200;opacity: 0;background: #fff;outline: none;}
