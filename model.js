@@ -68,12 +68,31 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
                 $scope.isEditInfor = false;
                 var dpUrl = '/japi/qiye/department/list';
                 $http.get(dpUrl).success(function(data){
-                    for (var i = data.items.length - 1; i >= 0; i--) {
-                        if(data.items[i].id == userData.departmentList[0].id){
+                    var userDepartments=[];
+                    var len = userData.departmentList.length-1;
+                    for (var i = 0;i < data.items.length ; i++) {
+                        if(data.items[i].id == userData.departmentList[len].id){
                             $scope.userDepartment = data.items[i].name;               
+                        }else if(data.items[i].level == 1){
+                            userDepartments.push(data.items[i])
+                            for (var j = 0;j < data.items.length ; j++) {
+                                if(data.items[j].parent == data.items[i].id){
+                                    // data.items[j].name ='-' + data.items[j].name;
+                                    userDepartments.push(data.items[j])
+                                    for (var t = 0;t < data.items.length ; t++) {
+                                        // data.items[t].name ='----' + data.items[t].name;
+                                        console.log(data.items[t].name);
+                                        if(data.items[t].parent == data.items[j].id){
+                                            userDepartments.push(data.items[t])
+                                        }
+                                    };
+                                }
+                            };
                         }
                     };
                     $scope.departmentListAll = data.items;
+                    $scope.userDepartments = userDepartments;
+                    // console.log(userDepartments);
                 });
                 // 显示
                 // $(".panel-box").animate({right:"0"},500);
@@ -81,11 +100,9 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
 
             // 编辑用户详情
 
-            $scope.isEditInfor = false;
             $scope.editUserinfor = function(id){
                 $scope.isEditInfor = true;
                 $scope.tagsList();
-                console.log(333,$scope.userDepartment)
             };
 
             //获取用户标签
@@ -98,17 +115,11 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
             }
             // 修改用户详情
             $scope.userUpdate = function(){
-                if($scope.department_selected1 || $scope.department_selected2 || $scope.department_selected3){
-                    $scope.department_selectedId = $scope.department_selected1;
-                    if($scope.department_selected2){$scope.department_selectedId = $scope.department_selected2}
-                    if($scope.department_selected3){$scope.department_selectedId = $scope.department_selected3}
-                }else{$scope.department_selectedId=null;}
-                // $http.get('/japi/qiye/department/list')teamId
-                var url = '/japi/qiye/contact/update';
-                $http({
-                    method: 'POST',
-                    url: url,
-                    data: $.param({
+                if($scope.department_selected1){
+                    $scope.department_selected1 = $("#department option:selected").val();
+                }
+                console.log($scope.department_selected1)
+                var data = $.param({
                         userId: $scope.userinfo.userId,
                         position: $scope.userinfo.position,
                         mobile: $scope.userinfo.mobile,
@@ -116,17 +127,26 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
                         email: $scope.userinfo.email,
                         wxid: $scope.userinfo.wxid,
                         name: $scope.userinfo.name,
-                        departmentId: $scope.department_selectedId
-                    }),
+                        departmentId: $scope.department_selected1
+                    });
+                if(!$scope.userinfo.departments){delete data.departmentId}
+                // $http.get('/japi/qiye/department/list')teamId
+                var url = '/japi/qiye/contact/update';
+                $http({
+                    method: 'POST',
+                    url: url,
+                    data: data,
                     headers:{'Content-Type':'application/x-www-form-urlencoded'}
                 }).success(function(data){
-                        if (data.success) {
+                        if (data.success==true) {
                             alert('修改成功');
+
                         }
                         else{
-                            alert('修改失败');
+                            alert(data.message);
                         }
                         $scope.department_selectedId=null;
+                        $scope.refreshContacts(1,100);
 
                 })
             };
@@ -140,22 +160,18 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
                 var url = '/japi/qiye/department/list';
                 $http.get(url).success(function(data){
                      for (var i in data.items) {
-                         if(data.items[i].parent == id){
-                            if(level==1){
+
+                            if(level==1 && data.items[i].parent == id){
                                 $scope.departmentSecond = true;
                                 $scope.departmentThird = false;
-                            }else if(level==2 && $scope.departmentSecond){
+                                console.log($scope.departmentSecond);
+                            }else if(level==2 && $scope.departmentSecond && data.items[i].parent == id){
                                 $scope.departmentSecond = true;
                                 $scope.departmentThird = true;
                             }else{
                                 $scope.departmentSecond = false;
                                 $scope.departmentThird = false; 
                             }
-                            // else{
-                            //     $scope.departmentSecond = false;
-                            //     $scope.departmentThird = false;
-                            // }
-                         }
                      }
                     })     
                 }     
@@ -318,7 +334,7 @@ contact_module
                             email: $scope.contactEmail,
                             wxid: $scope.contactWx,
                             name: $scope.contactName,
-                            departmentId: $scope.department_selectedId
+                            departmentId: $scope.department_selectedId.id
                         }),
                         headers: {'Content-Type': 'application/x-www-form-urlencoded'}
                     }).success(function(data){
