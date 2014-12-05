@@ -1,8 +1,8 @@
 'use strict';
 // epdApp
 var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap','cgPrompt',])
-    .controller('ContactsController', ['$scope', '$http', '$rootScope', '$timeout','$modal','notify',
-        function($scope, $http, $rootScope, $timeout,$modal,$filter,notify) {
+    .controller('ContactsController', ['$scope', '$http', '$rootScope', '$timeout','$modal','notify','prompt',
+        function($scope, $http, $rootScope, $timeout,$modal,notify,prompt) {
 
             $scope.nodeChanged = function(newNode) {
                 // do something when node changed
@@ -29,9 +29,12 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
                     $scope.maxSize = size;
                     console.log($scope.totalItems, currentPage, size)
                 };
-                var refreshContacts = $scope.refreshContacts = function(page, size){
+                var refreshContacts = $scope.refreshContacts = function(page, size,status){
                     // 拼装GET链接
                     var dataUrl = '/japi/qiye/contact/list/bydeparment?id=' + newNode.subid + "&size="+ size +"&page=" + page;
+                    if(status){
+                        dataUrl = '/japi/qiye/contact/list/bydeparment?id=' + newNode.subid + "&size="+ size +"&page=" + page +"&status=" + status.num;
+                    }
                     $http.get(dataUrl).success(function(data) {
                         $scope.contacts = data.items;
                         // console.info(11,$scope.contacts);
@@ -51,6 +54,20 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
 
             };
 
+            $scope.remindInfor = function(data){
+                if(data.success){
+                    notify({
+                        message: '操作成功',
+                        classes: 'alert-success'
+                    })   
+                }else{
+                    notify({
+                        message: data.message,
+                        classes: 'alert-error'
+                    })
+                }
+
+            }
             // 初始化的数据难
             // $http.get('/japi/qiye/contact/list/bydeparment?id=0&size=100')
             //    .success(function(data) {
@@ -58,11 +75,99 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
             //        // console.info(data.items);
             //        $scope.contacts = data.items;
             //    });
+            $scope.search = function(keyword){
+                var size = 100,
+                    page = 1;
+                var dataUrl = '/japi/qiye/contact/list/bydeparment?&size=' + size +"&page=" + page + "&keyword=" + keyword;
+                $http.get(dataUrl).success(function(data){
+                    $scope.contacts = data.items;
+                    $scope.setPagination(data.pageBean.count, data.pageBean.current, size);
+                })
+            };
+
+            // 标签管理
+            
+            $scope.showTags = function(){
+                $scope.tagsList();
+                $scope.tabStatus=!$scope.tabStatus;
+            };
+
+            $scope.removeTag = function(index,id){
+                $scope.tagsListAll.splice(index,1);
+                $http({
+                    method: 'POST',
+                    url: '/japi/qiye/contacttag/delete',
+                    data: $.param({
+                        id: id
+                    }),
+                    headers:{'Content-Type': 'application/x-www-form-urlencoded'}
+                }).success(function(data){
+                    if(data.success){
+                        console.log(data);
+                    }
+                })
+            };
+
+            $scope.editTag = function(data){
+                prompt({
+                    title: '输入标签名',
+                    input: true,
+                    value: data.name,
+                    "buttons":[
+                        {label:'取消',cancel:true},
+                        {label:'修改',primary:true}
+                    ]
+                }).then(function(name){
+                    data.name = name;
+                    $http({
+                        method: 'POST',
+                        url: '/japi/qiye/contacttag/update',
+                        data: $.param({
+                            name: data.name,
+                            id: data.id
+                        }),
+                        headers:{'Content-Type': 'application/x-www-form-urlencoded'}
+                    }).success(function(data){
+
+                    })
+                })
+
+            }
+            $scope.addTag = function(newTag){
+                // if(!newtag) return;
+                var tmp = {name:newTag};
+                $scope.tagsListAll.push(tmp);
+                $http({
+                    method: 'POST',
+                    url: '/japi/qiye/contacttag/create',
+                    data: $.param({
+                        name: newTag
+                    }),
+                    headers:{'Content-Type': 'application/x-www-form-urlencoded'}
+                }).success(function(data){
+                    if(data.success){
+                        var len = $scope.tagsListAll.length -1;
+                        $scope.tagsListAll[len].id = data.id;
+                        $scope.newTag = null;
+                    }else{
+                        console.log(data)
+                    }
+                })
+            };
+
+            // 设置成员属性
+            $scope.showProperty = function(){
+                var url;
+                $http.get(url).success(function(data){
+                    console.log(data)
+                })
+            };
 
             $scope.epdEditContact = function(contactId, userData) {
                 // console.log(contactId);
 
                 // 控制 userData 显示与否
+                $scope.userDepartment = null;
                 $scope.userinfo = userData;
                 $scope.isShowUserInfo = true;
                 $scope.isEditInfor = false;
@@ -72,8 +177,9 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
                     var len = userData.departmentList.length-1;
                     for (var i = 0;i < data.items.length ; i++) {
                         if(data.items[i].id == userData.departmentList[len].id){
-                            $scope.userDepartment = data.items[i].name;               
-                        }else if(data.items[i].level == 1){
+                            $scope.userDepartment = data.items[i];  
+                            $scope.userDepartment.index = i ;            
+                        }if(data.items[i].level == 1){
                             userDepartments.push(data.items[i])
                             for (var j = 0;j < data.items.length ; j++) {
                                 if(data.items[j].parent == data.items[i].id){
@@ -81,9 +187,14 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
                                     userDepartments.push(data.items[j])
                                     for (var t = 0;t < data.items.length ; t++) {
                                         // data.items[t].name ='----' + data.items[t].name;
-                                        console.log(data.items[t].name);
+                                        // console.log(data.items[t].name);
                                         if(data.items[t].parent == data.items[j].id){
                                             userDepartments.push(data.items[t])
+                                            for (var v = 0;v < data.items.length ; v++) {
+                                                if(data.items[v].parent == data.items[t].id){
+                                                    userDepartments.push(data.items[v])
+                                                }
+                                            };
                                         }
                                     };
                                 }
@@ -98,26 +209,71 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
                 // $(".panel-box").animate({right:"0"},500);
             };
 
+
             // 编辑用户详情
 
             $scope.editUserinfor = function(id){
                 $scope.isEditInfor = true;
                 $scope.tagsList();
             };
-
+            // 部门分级器
+            $scope.departmentTree = function(){
+                var dpUrl = '/japi/qiye/department/list';
+                $http.get(dpUrl).success(function(data){
+                    var userDepartments=[];
+                    for (var i = 0;i < data.items.length ; i++) {
+                        if(data.items[i].level == 1){
+                            userDepartments.push(data.items[i])
+                            for (var j = 0;j < data.items.length ; j++) {
+                                if(data.items[j].parent == data.items[i].id){
+                                    userDepartments.push(data.items[j])
+                                    for (var t = 0;t < data.items.length ; t++) {
+                                        if(data.items[t].parent == data.items[j].id){
+                                            userDepartments.push(data.items[t])
+                                            for (var v = 0;v < data.items.length ; v++) {
+                                                if(data.items[v].parent == data.items[t].id){
+                                                    userDepartments.push(data.items[v])
+                                                }
+                                            };
+                                        }
+                                    };
+                                }
+                            };
+                        }
+                    };
+                    // $scope.departmentListAll = data.items;
+                    $scope.userDepartments = userDepartments;
+                    console.log(userDepartments);
+                });
+            }
             //获取用户标签
             $scope.tagsList = function(){
                 var tagsUrl = '/japi/qiye/contacttag/list';
                 $http.get(tagsUrl).success(function(data){
+                    var tagsRemind = [];
+                    for (var i = data.items.length - 1; i >= 0; i--) {
+                        var tmp = {text:data.items[i].name}
+                        tagsRemind.push(tmp);
+                    };
+                    $scope.tagsRemind = {
+                        'multiple': true,
+                        'simple_tags': true,
+                        'tags': tagsRemind
+                    };
                     $scope.tagsListAll = data.items;
-                    // console.log(data.items)
+
+                    console.log($scope.tagsRemind)
                 })
-            }
+            };
+
+            $scope.loadTags = function($query){
+                var deferred = $q.defer();
+                deferred.resolve(['Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5']);
+                return deferred.promise;
+            };
             // 修改用户详情
             $scope.userUpdate = function(){
-                if($scope.department_selected1){
-                    $scope.department_selected1 = $("#department option:selected").val();
-                }
+                $scope.department_selected1 = $("#department option:selected").val();
                 console.log($scope.department_selected1)
                 var data = $.param({
                         userId: $scope.userinfo.userId,
@@ -205,21 +361,60 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
             // checkbox全选
             $scope.chkAll = function(){
                 var all = $('.js_checkbox_all')[0],
-                    ckList = $('.js_checkbox');
+                    ckList = $('.js_checkbox'),
+                    action;
+                action = (all.checked?"add":"remove");
                 for (var i = ckList.length - 1; i >= 0; i--) {
                     ckList[i].checked = all.checked ?  true : false; 
                 }
+                $scope.isShowBatchEdit=true;
+                if(action == 'remove'){
+                    $scope.batchUsers = [];
+                }if(action == 'add'){
+                    $scope.batchUsers = angular.copy($scope.contacts);
+                }
+            };
+
+            // 批量编辑展示
+            $scope.batchUsers = [];
+
+            $scope.showBatchEdit = function($event,user){
+                var chkbox = $event.target;
+                var action = (chkbox.checked?"add":"remove");
+                $scope.isShowBatchEdit=true;
+                $scope.updateBatchEdit(action,user);
+            };
+
+            // 同步编辑用户操作
+            $scope.updateBatchEdit = function(action,user){
+                if(action == 'add'){
+                    $scope.batchUsers.push(user);
+                }else if(action == 'remove'){
+                    var index,m;
+                    for(m in $scope.batchUsers){
+                        if($scope.batchUsers[m].userId == user.userId) index = m;
+                    }
+                    $scope.batchUsers.splice(index,1);
+                }
 
             };
-            $scope.statusFilter = function(num){
-                if(num == 3){
-                    $scope.statusFilterResult = null;
-                }else if(num ==1 || num == 0){
-                    $scope.statusFilterResult = (num == 1 ? {status:1} : {status:0});
+
+            $scope.statusParam = [
+                {"num":3,"name":"所有"},
+                {"num":2,"name":"已关注"},
+                {"num":1,"name":"未关注"},
+                {"num":0,"name":"禁用"}
+            ];
+
+            $scope.statusFilter = function(status){
+                console.log('0000',status.num);
+                if(status.num==3){
+                    $scope.refreshContacts(1,100);
+                }else{
+                    $scope.refreshContacts(1,100,status);              
                 }
-                 //已关注 未关注
-                console.log(statusFilterResult);
             }
+
             // 创建用户
             $scope.createUser = function(){
                 $scope.departmentLists();
@@ -253,7 +448,22 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
                         }
                     }
                 })
-            }
+            };
+
+            // 设置用户属性
+            $scope.userProperty = function(){
+                var url;
+                $http.get(url).success(function(data){
+                    propertys = data.items;
+                });
+                $modal.open({
+                    templateUrl: 'userProperty.html',
+                    controller: 'ContactsModalController',
+                    size: '',
+                    scope: $scope
+                })
+            };
+
             $scope.remove = function(){
                 var ids = [],
                     ckList = $('.js_checkbox');
@@ -289,19 +499,83 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute','ui.bootstrap'
             };
             // 开启用户
             $scope.userStart = function(userinfo){
-                $http.post('/japi/qiye/contact/enable?userId=' + userinfo.userId).success(function(data){
-                    console.log(data);
-                    userinfo.status = 1;
-                })
+                var url = '/japi/qiye/contact/enable?userId=';
+                if(userinfo=='batchUsers'){
+                    var succeed = 0,
+                        faild = 0;
+                    for (var i = $scope.batchUsers.length - 1; i >= 0; i--) {
+                        $http.post(url + $scope.batchUsers[i].userId).success(function(data){
+                            if(data.success) {
+                                succeed += 1;
+                            }else{
+                                faild += 1;
+                            }
+                            console.log(succeed,faild)
+                        })                     
+                    };
+                    notify({
+                        message: '修改成功',
+                        classes: 'alert-success'
+                    });
+                    $scope.statusFilterrefreshContacts(1,100);
+                    console.log($scope.batchUsers.length);
+                }else{
+                    $http.post(url + userinfo.userId).success(function(data){
+                        $scope.remindInfor(data);
+                        userinfo.status = 1;
+                    })
+                }
             };
 
             // 禁用用户
             $scope.userForbidden = function(userinfo){
-                $http.post('/japi/qiye/contact/disable?userId=' + userinfo.userId).success(function(data){
-                    userinfo.status = 0;
-                    console.log(data);
+                var url = '/japi/qiye/contact/enable?userId=';
+                if(userinfo=='batchUsers'){
+                    var succeed = 0,
+                        faild = 0;
+                    for (var i = $scope.batchUsers.length - 1; i >= 0; i--) {
+                        $http.post(url + $scope.batchUsers[i].userId).success(function(data){
+                            if(data.success) {
+                                succeed += 1;
+                            }else{
+                                faild += 1;
+                            }
+                            console.log(succeed,faild)
+                        })                     
+                    };
+                    notify({
+                        message: '修改成功',
+                        classes: 'alert-success'
+                    });
+                    $scope.refreshContacts(1,100);
+                }else{
+                    $http.post(url + userinfo.userId).success(function(data){
+                        userinfo.status = 0;
+                        console.log(data);
+                    })
+                }
+
+            };
+            $scope.moveBatchUserChoose = function(){
+                $scope.departmentTree();
+                $modal.open({
+                    templateUrl: 'moveBatchUserChoose.html',
+                    controller: 'ContactsModalController',
+                    scope: $scope
+                });
+                modalInstance.result.then(function(batchDepartmentId){
+                    $scope.moveBatchUser(batchDepartmentId);
                 })
             };
+
+
+            $scope.blackUser = function(userinfo){
+                var url = '/japi/qiye/contact/delete?userId=';
+                $http.post(url + userinfo.userId).success(function(data){
+                    $scope.remindInfor(data);
+                    $scope.refreshContacts(1,100);
+                })
+            }
         }]);
 
 // contact_module.filter('startFrom', function() {
@@ -496,6 +770,26 @@ contact_module
                     console.log(1);
                     }
                 })
+            };
+
+            $scope.moveBatchUser = function(){
+                var url = "/japi/qiye/contact/departmentalize";
+                for (var i = $scope.batchUsers.length - 1; i >= 0; i--) {
+                    $http.post({
+                        method: 'POST',
+                        url: url,
+                        data: $.param({
+                            userId: $scope.batchUsers[i].userId,
+                            id: $scope.batchDepartmentId
+                        }),
+                        headers:{'Content-Type':'application/x-www-form-urlencoded'}
+                    })
+                };
+                notify({
+                    message: '移动成功',
+                    classes: 'alert-success'
+                })
+                $scope.refreshContacts(1,100);
             };
 
 
