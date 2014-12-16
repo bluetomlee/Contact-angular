@@ -1,0 +1,525 @@
+<div class="contact_view" ng-controller="ContactsController">
+
+
+    <div class="contact-tree">
+        <div class="tree-box-banner">
+            <ul>
+                <li class="{{!tabStatus?'active1':''}}" ng-click="tabStatus=false">组织架构</li>
+                <li class="{{tabStatus?'active2':''}}" ng-click="showTags()">标签管理</li>
+            </ul>
+        </div>
+        <div jsTree selected-node="node" selected-node-changed="nodeChangedDepart" class="js_party_tree tree_box" ng-show="!tabStatus"><!-- js tree --> </div>
+        <!-- tags control -->
+        <div jsTagTree class="tagCtr" ng-show="tabStatus" selected-node="node" selected-node-changed="nodeChangedTag"><!--js tag tree--></div>
+    </div>
+
+   <div class="contact-panel-top">
+       <div class="back-apps dropdown clearfix title_link">
+            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
+              组织成员
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+              <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:" ng-click="setProperty()">设置属性</a></li>
+              <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:" ng-click="createUser()">新建成员</a></li>
+              <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:" ng-click="importAll()">批量导入</a></li>
+            </ul>
+
+      </div>
+       <div class="bar_right_sch form-inline">
+          <input type="text" class="form-control" ng-model="search_text" placeholder="输入搜索信息">
+<!--             <select name="" class="form-control title_link">
+
+                   <option value="name">姓名</option>
+                   <option value="mobile">手机</option>
+                   <option value="wxid">微信号</option>
+                   <option value="email">邮箱</option>
+               </select>-->
+          <button class="btn btn-default" ng-click="search(search_text)">搜索</button> 
+       </div>
+       <div class="apps-title">
+           <!--<img class="app-pic" src="http://dchat.dxy.cn/imgqn/upload_files/2014/11/12/1415758669001039747.png" alt=""/>
+           --><span class="app-name">全部成员{{contactTotal}}<i class="fa fa-caret-down"></i></span>
+       </div>
+     <!--  <div class="member-search">
+           <input type="search"/>
+           <a href=""><i class="fa fa-search"></i></a>
+       </div>-->
+   </div>
+   <div class="contact-box" ng-init="userProperty()">
+       <div class="tree_list js_member_list">
+           <div class="js_title_bar title_bar">
+               <div class="js_title title">
+                   <div class="checkbox_node">
+                      <input type="checkbox" class="js_checkbox_all checkbox" ng-click="chkAll($event)">
+                   </div>
+                   <p class="name js_username" ng-repeat="proTitle in shownPropertyTitle">
+                      <a href="javascript:;" class="title_link title_link_sort">{{proTitle.label}}</a>
+                   </p>
+<!--                    <p class="account">
+                      <a href="javascript:;" class="title_link">{{shownPropertyTitle[2]}}</a>
+                   </p>
+                   <p class="position">
+                      <a href="javascript:;" class="title_link">{{shownPropertyTitle[3]}}</a>
+                   </p>
+                   <p class="phone">
+                      <a href="javascript:;" class="title_link">{{shownPropertyTitle[4]}}</a>
+                   </p>
+                   <p class="mail">
+                      <a href="javascript:;" class="title_link">{{shownPropertyTitle[5]}}</a>
+                   </p> -->
+                   <div class="state">
+                    <select  class="form-control" ng-init="statusFilterResult=statusParam[0]" ng-options="m.name for m in statusParam" ng-model="statusFilterResult" ng-change="statusFilter(statusFilterResult)">
+                    </select>
+                   </div>
+               </div>
+           </div>
+           <ul editContacts id="member_list" class="member_list">
+               <li ng-repeat="contact in contacts" tid="{{contact.teamId}}" uid="{{contact.userId}}" uin="{{contact.id}}" class="js_list_member">
+                   <div class="checkbox_node js_checkbox_help">
+                        <input type="checkbox" class="js_checkbox checkbox" ng-click="showBatchEdit($event,contact)" ng-model="contact.checked" id="{{contact.userId}}"></div>
+                  <p class="member_propertyInfor" ng-show="isShowUserAvatar">
+                      <img ng-show="isShowUserAvatar" class="face js_lazy" ng-src="{{contact.avatar}}" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiyAhaARBgAAKIAWPFBn5WAAAAAElFTkSuQmCC">
+                   </p>
+<!--                    <p class="name js_username"  ng-click="epdEditContact($event, contact)">{{contact.name}}</p>
+                   <p class="account" title="{{contact.userId}}" ng-click="epdEditContact($event, contact)">{{contact.userId}}</p>
+                   <p class="position" title="" ng-click="epdEditContact($event, contact)">{{contact.position}}</p>
+                   <p class="phone" title="13761015357" ng-click="epdEditContact($event, contact)">{{contact.mobile}}</p>
+                   <p class="mail">{{contact.email}}</p> -->
+<!--                    <p class="name js_username"  ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[0].key }}</p> -->
+                   <p class="member_propertyInfor" ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[0].key }}</p>
+                   <p class="member_propertyInfor" ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[1].key }}</p>
+                   <p class="member_propertyInfor" title="" ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[2].key }}</p>
+                   <p class="member_propertyInfor" title="13761015357" ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[3].key }}</p>
+                   <p class="member_propertyInfor">{{contact | getPropertyInfor:shownPropertyTitle[4].key }}</p>
+                   <p class="member_propertyInfor">{{contact | getPropertyInfor:shownPropertyTitle[5].key }}</p>
+                   <p class="member_propertyInfor" ng-show="shownPropertyTitle[6]">{{contact | getPropertyInfor:shownPropertyTitle[6].key }}</p>
+                   <p class="state">{{contact.status==1?"未关注":""}}{{contact.status==0?"禁用":""}}{{contact.status==2?"已关注":""}}</p>
+               </li>
+           </ul>
+            <!-- 分页 -->
+           <div class="pageview">
+               <pagination
+                    ng-change="pageChanged()"
+                    total-items="totalItems"
+                    ng-model="currentPage"
+                    max-size="5"
+                    items-per-page="maxSize"
+                    class="pagination-sm"
+                    boundary-links="true"
+                    rotate="false"
+                    previous-text="&lsaquo;"
+                    next-text="&rsaquo;"
+                    first-text="&laquo;"
+                    last-text="&raquo;"
+                    >
+               </pagination>
+           </div>
+       </div>
+   </div>
+
+  <!-- 用户属性设置 -->
+  <div>
+    <script type="text/ng-template" id="userProperty.html">
+    <div class="modal-header">
+        <h4 class="modal-title center">设置用户属性</h4>
+    </div>
+    <div class="modal-body">
+        <!--<h4>正在努力建设ing</h4>-->
+        <div class="userProperty">
+            <div class="propertyRemind">
+               <span style="font-family:Heiti SC;font-size:14px;font-weight:normal;font-style:normal;text-decoration:none;color:#CCCCCC;">√勾选需要在列表中展示的字段，最多展示10个</span>
+            </div>
+            <ul class="propertyItems center">
+                <li class="item" ng-repeat="propertyA in propertyItems.slice(0,4)">
+                    <label class="propertyChkboxA">
+                     <input type="checkbox" ng-model="propertyA.shown">
+                      {{propertyA.label}}
+                    </label>
+                      <span class="itemRequired">{{propertyA.key | getPropertyType:propertyA.key}}</span>
+                </li>
+                <li class="item" ng-repeat="propertyB in propertyItems.slice(4,7)">
+                    <label class="propertyChkboxA">
+                     <input type="checkbox" ng-model="propertyB.shown">
+                      {{propertyB.label}}
+                    </label>
+                    <div class="propertyChkboxB">
+                        <label>
+                         <input type="radio" ng-model="propertyB.required" ng-value="true">
+                          必填
+                        </label>
+                        <label>
+                         <input type="radio" ng-model="propertyB.required" ng-value="false">
+                          选填
+                        </label> 
+                    </div>
+                </li>
+                <li class="item" ng-repeat="propertyC in propertyItems.slice(7)" ng-mouseover="proEdit=true" ng-mouseout="proEdit=false" >
+                    <label class="propertyChkboxA">
+                     <input type="checkbox" ng-model="propertyC.shown">
+                      {{propertyC.label}}
+                    </label>
+                    <div class="propertyChkboxB">
+                        <label>
+                         <input type="radio" ng-model="propertyC.required" ng-value="true">
+                          必填
+                        </label>
+                        <label>
+                         <input type="radio" ng-model="propertyC.required" ng-value="false">
+                          选填
+                        </label>
+                    </div>  
+                      <i class="fa fa-trash"  ng-show="proEdit" ng-click="removeProSample($index)"></i>
+                </li>
+                <select class="moreProperty" ng-options="sample.label for sample in propertySamples" ng-model="moreProperty" ng-change="addProSample(moreProperty)">
+                  <option value="">+添加属性</option>
+                  </select>
+                  <input type="text" ng-show="moreProperty.key=='custompro'" ng-model="customProInput" placeholder="请输入文本">
+                  <button class="btn btn-primary btn-xs" ng-show="moreProperty.key=='custompro'" ng-click="addProSampleText(customProInput)">添加</button>
+            </ul>
+            <button class="btn btn-primary btn-sm" ng-click="saveProSample()">保存</button>
+            <button class="btn btn-primary btn-sm" ng-click="cancelModal()">取消</button>
+        </div>
+    </div>
+    </script>
+  </div>
+   <!-- END 用户属性设置 -->
+  
+
+      <!-- 新建用户模板   -->
+   <div>
+      <script type="text/ng-template" id="createUser.html">
+      <form role="form" id="createUser" name="createUserForm" novalidate="">
+         <div class="modal-header">
+                  <h4 class="modal-title center">新建成员</h4>
+               </div>
+               <div class="modal-body">
+                  <form action="" role="form" class="create_user" name="createContact">
+                     <div class="create_user_head clearfix">
+                        <div class="user_avatar">
+                           <img width="80" height="80" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiyAhaARBgAAKIAWPFBn5WAAAAAElFTkSuQmCC" alt="">
+                        </div>
+                        <div class="user_tt">
+                           <div class="form-group">
+                              <input type="text" class="form-control" ng-model="newUser.name" required placeholder="姓名">
+                           </div>
+                        <div class="form-group">
+                               <select class="form-group" ng-model="department_selectedId">
+                                   <option ng-selected="userDepartment.id==m.id" value="{{m.id}}" ng-repeat="m in userDepartments" >{{(m.level)==5?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==4?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==3?'&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==1?m.name:'&nbsp;&nbsp;&nbsp;&nbsp;'+m.name}}
+                                   </option>
+                               </select>
+
+                              <!--<select ng-model="department_selected1" ng-options="m.name for m in departmentListAll | filter:{level:1}" class="form-group" ng-change="departmentExist(department_selected1.id,department_selected1.level)">
+                                  <option value="">-- 请选择 --</option>
+                              </select>
+                              <select ng-model="department_selected2"   ng-show="departmentSecond==true" ng-options="m.name for m in departmentListAll | filter:{parent:department_selected1.id}" class="form-group department-hide" ng-change="departmentExist(department_selected2.id,department_selected2.level)">
+                                  <option value="">-- 请选择 --</option>
+                              </select>
+                              <select ng-model="department_selected3" ng-show="departmentThird==true" ng-options="m.name for m in departmentListAll | filter:{parent:department_selected2.id}" class="form-group department-hide">
+                                  <option value="">-- 请选择 --</option>
+                              </select>-->
+                        </div>
+                        </div>
+                     </div>
+                     <div class="create_user_identify">
+                        <h5 class="create_user_tt"><span class="glyphicon glyphicon-exclamation-sign"></span></h5>
+                        <div class="form-group">
+                           <label for="">微信号</label>
+                           <input type="text" class="form-control" ng-model="newUser.wxid">
+                        </div>
+                        <div class="form-group">
+                           <label for="">手机</label>
+                           <input type="text" class="form-control" ng-pattern="/\d{9}/" ng-model="newUser.mobile">
+                        </div>
+                        <div class="form-group">
+                           <label for="">邮箱</label>
+                           <input type="email" class="form-control" name="email" ng-model="newUser.email">
+                        </div>
+
+                     </div>
+                     <!-- 其他属性信息 -->
+                     <div class="create_user_other">
+                        <h5 class="create_user_tt"><span class="glyphicon glyphicon-exclamation-sign"></span>其他属性信息(选填)</h5>
+                        <div class="form-group" data-drop="true" ng-repeat="propertyC in propertyItems.slice(7) | filter:{shown:true}">
+                           <label>{{propertyC.label}}</label>
+                           <input type="text" class="form-control" ng-model="newUser[propertyC.key]" required="{{propertyC.required}}">
+                        </div>
+                      <div class="form-group" data-drop="true" jqyoui-draggable>
+                      <label for="">标签</label>
+                      <div class="form-group tagsList">
+                              <input type="text" ui-select2="vm.option2" ng-model="vm.value2" style="width: 100%"/>
+                              <!--<input type="text" class="form-control tagInput" ng-model="contactTags1" ng-click="showTagsInput(contactTags1)" ng-change="showTagsInput(contactTags1)">
+                              <ul class="tagsReminds" ng-show="tagsRemidStatus">
+                                <li class="tagsRemind" ng-repeat="tag in tagsListAll | filter:tagsRemindInfor" ng-click="addTags(tag.id,tag.name)">{{tag.name}}</li>
+                              </ul>
+                              
+                            <select ng-model="contactTags1"  ng-options="m.name for m in tagsListAll" class="form-group">
+                                <option value="">-- 请选择 --</option>
+                            </select>
+                            <select ng-model="contactTags2" ng-hide="!contactTags1" ng-options="m.name for m in tagsListAll" class="form-group">
+                                <option value="">-- 请选择 --</option>
+                            </select>
+                            <select ng-model="contactTags3" ng-hide="!contactTags2" ng-options="m.name for m in tagsListAll" class="form-group">
+                                <option value="">-- 请选择 --</option>
+                            </select>
+                            <select ng-model="contactTags4" ng-hide="!contactTags3" ng-options="m.name for m in tagsListAll" class="form-group">
+                                <option value="">-- 请选择 --</option>
+                            </select> -->
+                      </div>
+                     </div>
+                  </form>
+               <div class="modal-footer">
+                  <button class="btn btn-primary" ng-click="saveContact()" ng-disabled="createUserForm.$invalid">保存</button>
+                   <!--<button class="btn btn-primary" id="saveContactNew" ng-click="saveContactNew()">保存并添加下一个</button> -->
+               </div> 
+      </form>           
+      </script>
+   </div>
+
+      <!-- 批量导入 -->
+
+   <script type="text/ng-template" id="importContact.html">
+      <div class="importAll">
+            <div class="modal-header">
+                     <h4 class="modal-title center">批量导入</h4>
+                  </div>
+                  <div class="modal-body">
+                     <p>帐号成员上限为1000人，超出部分无法导入</p>
+                     <p>下载标准表格&nbsp;&nbsp;&nbsp;<a href="/japi/assets/tmpl/qy_contact_import.csv">下载</a></p>
+                     <p ng-show="importContactStatus==0">文档转换中....</p>
+                  <div class="modal-footer">
+                      <button class="btn btn-primary upload-contact">
+                          <div class="btn-box">
+                              上传
+                              <input type="file" class="upload-cus" nv-file-select uploader="uploadContact" value="上传" />
+                          </div>
+                      </button>
+                  </div>   
+      </div>
+   </script>
+    <!-- 批量移动modal框 -->
+    <script type="text/ng-template" id="moveBatchUserChoose.html">
+      <div class="batchUserChoose">
+            <div class="modal-header">
+                     <h4 class="modal-title center">批量移动部门</h4>
+                  </div>
+                  <div class="modal-body">
+                           <div class="form-group department" class="department">
+                               <select class="form-group" ng-model="batchDepartmentId">
+                                   <option value="{{m.id}}" ng-repeat="m in userDepartments" >{{(m.level)==5?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==4?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==3?'&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==1?m.name:'&nbsp;&nbsp;&nbsp;&nbsp;'+m.name}}
+                                   </option>
+                               </select>
+                           </div>
+                     
+                  <div class="modal-footer">
+                      <button class="btn btn-default" ng-click="moveBatchUser()">确定</button>
+                  </div>   
+      </div>
+    </script>
+    <!-- 批量关联标签 -->
+    <script type="text/ng-template" id="batchUsersTag.html">
+      <div class="batchUserChoose">
+            <div class="modal-header">
+                     <h4 class="modal-title center">批量关联标签</h4>
+                  </div>
+                  <div class="modal-body">
+                           <div class="form-group department" class="department">
+                               <input type="text" ui-select2="vm.option2" ng-model="userTagsModel" ng-change="isDirtyUserTag()" style="width: 100%"/>
+                           </div>
+                     
+                  <div class="modal-footer">
+                      <button class="btn btn-default" ng-click="batchUsersTags()">确定</button>
+                  </div>   
+      </div>
+    </script>
+
+  <!-- 批量编辑用户模板-->
+  <div class="apps-panel-box batchedit-panel-box" ng-show="isShowBatchEdit">
+      <div class="apps-panel-head userinfo-panel-header">
+         批量编辑
+          <i class="fa fa-close" title="关闭" ng-click="isShowBatchEdit = !isShowBatchEdit"></i>
+      </div>
+      <div class="apps-panel-body">
+        <ul class="batchUsers">
+          <li ng-repeat="i in batchUsers" class="batchUser"  ng-mouseover="isShowBatchIcn=true" ng-mouseout="isShowBatchIcn=false" >
+               <img class="avatar" ng-src="{{i.avatar}}" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiyAhaARBgAAKIAWPFBn5WAAAAAElFTkSuQmCC" class="face js_lazy">
+               <span class="glyphicon glyphicon-remove" ng-show="isShowBatchIcn" ng-click="updateBatchEdit('remove',i)"></span>
+               <div class="batchUserBtm">
+                   <span class="batchUserName">{{i.name}}</span>
+                   
+               </div>
+              
+          </li>
+        </ul>
+      </div>
+      <div class="apps-panel-footer">
+         <button class="btn btn-default userinfo-panel-btn" ng-click="isShowbatchTags()">关联标签</button>
+         <button class="btn btn-default userinfo-panel-btn"  ng-click="userStart('batchUsers')">启用</button>
+         <button class="btn btn-default userinfo-panel-btn"  ng-click="userForbidden('batchUsers')">禁用</button>
+          <div class="dropdown more">
+              <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu3" data-toggle="dropdown">
+                更多
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
+<!--                 <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:" ng-click="">删除</a></li>
+                <li role="presentation" class="divider"></li> -->
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="javascript:" ng-click="moveBatchUserChoose()">移动</a></li>
+              </ul>
+         </div>        
+         <div class="form-inline" ng-show="userMore_status">
+            
+         </div>
+      </div>
+
+  </div>
+
+   <!-- 个人详情模板 -->
+   <div class="apps-panel-box userinfo-panel-box" ng-show="isShowUserInfo">
+      <div class="apps-panel-head userinfo-panel-header">
+         个人信息
+          <i class="fa fa-close" title="关闭" ng-click="isShowUserInfo = !isShowUserInfo"></i>
+      </div>
+       <div class="apps-panel-body">
+           <form class="info" role="form" ng-submit="userUpdate(userinfo)">
+               <div class="u_info">
+                   <div class="u_top">
+                       <div class="item clearfix">
+                           <div class="item-left u_avatar">
+                               <img width="80" height="80" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiyAhaARBgAAKIAWPFBn5WAAAAAElFTkSuQmCC" alt="{{userinfo.name}}">
+                           </div>
+                           <div class="item-right">
+                               <div class="u_name" ng-show="!isEditInfor" ng-click="editUserinfor(contact.userId)">{{userinfo.name}}
+                               </div>
+                               <div class="form-group">
+                                   <div class="editInfor" ng-show="isEditInfor">
+                                       <input type="text" ng-model="userinfo.name" name="name" class="form-froup ng-valid">
+                                   </div>
+                               </div>
+
+                               <div class="u_userid" ng-show="!isEditInfor" ng-hide="isEditInfor" ng-click="editUserinfor(contact.userId)">{{userinfo.id}}
+                               </div>
+                               <div class="u_identy">{{userinfo.identy}}</div>
+                               <div class="u_status">{{userinfo.status==1?"未关注":""}}{{userinfo.status==0?"禁用":""}}{{userinfo.status==2?"已关注":""}}</div>
+                           </div>
+                           <input class="u_saveInfor" type="submit" ng-show="isEditInfor" value="保存" />
+                       </div>
+                   </div>
+                   <div class="u_bottom">
+                       <div class="u_mobile item clearfix" ng-show="userinfo.mobile || isEditInfor">
+                           <div class="item-left u_info_title">手机</div>
+                           <div class="item-right u_info_content" ng-show="!isEditInfor">{{userinfo.mobile}}</div>
+                           <div class="form-group">
+                               <div class="editInfor" ng-show="isEditInfor">
+                                   <input type="text" ng-model="userinfo.mobile" name="mobile" class="form-froup ng-valid">
+                               </div>
+                           </div>
+                       </div>
+
+                       <!--                <div class="u_gender item clearfix">
+                                         <div class="item-left u_info_title">性别</div>
+                                         <div class="item-right u_info_content">{{userinfo.gender}}</div>
+                                      </div> -->
+
+
+                       <!--                <div class="u_telephone item clearfix">
+                                         <div class="item-left u_info_title">固定电话</div>
+                                         <div class="item-right u_info_content">{{userinfo.telephone}}</div>
+                                      </div> -->
+
+                       <div class="u_wxid item clearfix" ng-show="userinfo.wxid || isEditInfor">
+                           <div class="item-left u_info_title">微信</div>
+                           <div class="item-right u_info_content" ng-show="!isEditInfor">{{userinfo.wxid}}</div>
+                           <div class="form-group">
+                               <div class="editInfor" ng-show="isEditInfor">
+                                   <input type="text" ng-model="userinfo.wxid" name="wxid" class="form-froup ng-valid">
+                               </div>
+                           </div>
+                       </div>
+                       <div class="u_email item clearfix" ng-show="userinfo.email || isEditInfor">
+                           <div class="item-left u_info_title">邮箱</div>
+                           <div class="item-right u_info_content" ng-show="!isEditInfor">{{userinfo.email}}</div>
+                           <div class="form-group">
+                               <div class="editInfor" ng-show="isEditInfor">
+                                   <input type="text" ng-model="userinfo.email" name="email" class="form-froup ng-valid">
+                               </div>
+                           </div>
+                       </div>
+                       <div class="u_position item clearfix" ng-show="userinfo.position || isEditInfor">
+                           <div class="item-left u_info_title">职位</div>
+                           <div class="item-right u_info_content" ng-show="!isEditInfor">{{userinfo.position}}</div>
+                           <div class="form-group">
+                               <div class="editInfor" ng-show="isEditInfor">
+                                   <input type="text" ng-model="userinfo.position" name="position" class="form-froup ng-valid">
+                               </div>
+                           </div>
+                       </div>
+                       <div class="u_departments item clearfix"  ng-show="userDepartment || isEditInfor">
+                           <div class="item-left u_info_title">部门</div>
+                           <div class="item-right u_info_content" ng-show="!isEditInfor">{{userDepartment.name}}</div>
+                           <div class="form-group department" ng-show="isEditInfor" id="department">
+                               <select class="form-group" ng-model="userDepartment.id">
+                                  <!--<option  val编辑ue="userDepartment.id">{{userDepartment.name}}</option>-->
+                                   <option ng-selected="userDepartment.id==m.id" value="{{m.id}}" ng-repeat="m in userDepartments" >{{(m.level)==5?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==4?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==3?'&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==1?m.name:'&nbsp;&nbsp;&nbsp;&nbsp;'+m.name}}
+                                   </option>
+                               </select>
+                           </div>
+
+                       </div>
+                      <div class="u_tags item clearfix" ng-show="isEditInfor || userinfo.tagList">
+                         <div class="item-left u_info_title" ng-hide="isEditInfor ||userinfo.tagList.length==0">标签</div>
+                         <div class="item-right u_info_content" ng-show="!isEditInfor">
+                            <span ng-repeat="tag in userTagsModel" class="tag">{{tag}}</span>
+                         </div>
+                         <div class="form-group hide" ng-show="isEditInfor">
+                            <input type="text" ui-select2="vm.option2" ng-model="userTagsModel" ng-change="" style="width: 62%"/>
+                                     <!--<input type="text" class="form-control tagInput" ng-model="contactTags1" ng-click="showTagsInput(contactTags1)" ng-change="showTagsInput(contactTags1)">
+                                     <ul class="tagsReminds" ng-show="tagsRemidStatus">
+                                       <li class="tagsRemind" ng-repeat="tag in tagsListAll | filter:tagsRemindInfor" ng-click="addTags(tag.id,tag.name)">{{tag.name}}</li>
+                                     </ul>
+                                     -->
+                              
+                         </div>
+
+                      </div>
+                      <div class="item clearfix" ng-repeat="propertyC in propertyItems.slice(7)" ng-show="isEditInfor || userinfo[propertyC.key]">
+                         <div class="item-left u_info_title" ng-hide="!(contact | getPropertyInfor:propertyC.key)">{{propertyC.label}} </div>
+                         <div class="item-right u_info_content" ng-hide="isEditInfor">
+                            <span class="">{{userinfo[propertyC.key]}}</span>
+                         </div>
+                         <div class="form-group"  ng-show="isEditInfor">
+                               <div class="editInfor">                                   
+                               <input type="text" ng-model="userinfo[propertyC.key]" class="form-froup">
+                               </div>
+                          </div>
+                      </div>
+
+                   </div>
+
+               </div>
+           </form>
+       </div>
+
+      <div class="apps-panel-footer">
+         <button class="btn btn-default userinfo-panel-btn">置顶</button>
+         <button class="btn btn-default userinfo-panel-btn" ng-click="editUserinfor()">修改</button>
+         <button class="btn btn-default userinfo-panel-btn" disabled>邀请关注</button>
+         <button class="btn btn-default userinfo-panel-btn" ng-show="userinfo.status == 0" ng-click="userStart(userinfo)">启用</button>
+         <button class="btn btn-default userinfo-panel-btn" ng-show="userinfo.status == 1" ng-click="userForbidden(userinfo)">禁用</button>
+          <div class="dropdown more">
+              <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                更多
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
+                <li role="presentation" ng-show="!isShowUserBlack"><a role="menuitem" tabindex="-1" href="javascript:" ng-click="blackUser(userinfo)">拉黑</a></li>
+                <li role="presentation" ng-show="isShowUserBlack"><a role="menuitem" tabindex="-1" href="javascript:" ng-click="washedUser(userinfo)">洗白</a></li>
+                <li role="presentation" class="divider"></li>
+              </ul>
+         </div>        
+<!--          <div class="form-inline" ng-show="userMore_status">
+            
+         </div> -->
+      </div>
+   </div>
+</div>
