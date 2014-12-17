@@ -1,6 +1,6 @@
 'use strict';
 // epdApp
-var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap', 'cgPrompt','ui.select2'])
+var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap', 'cgPrompt',,'ngAnimate','ui.select2','angular.city.select'])
     .controller('ContactsController', ['$scope', '$http', '$rootScope', '$timeout','$modal','notify','prompt',
         function($scope, $http, $rootScope, $timeout,$modal,notify,prompt) {
 
@@ -56,11 +56,11 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                     $scope.maxSize = size;
                     console.log($scope.totalItems, currentPage, size)
                 };
-                var refreshContacts = $scope.refreshContacts = function(page, size, status){
+                var refreshContacts = $scope.refreshContacts = function(page, size, num){
                     // 拼装GET链接
                     var dataUrl = '/japi/qiye/contact/list/bydeparment?id=' + newNode.subid + "&size="+ size +"&page=" + page;
-                    if(status){
-                        dataUrl = '/japi/qiye/contact/list/bydeparment?id=' + newNode.subid + "&size="+ size +"&page=" + page +"&status=" + status.num;
+                    if(num >= 0){
+                        dataUrl = '/japi/qiye/contact/list/bydeparment?id=' + newNode.subid + "&size="+ size +"&page=" + page +"&status=" + num;
                     }
                     if(newNode.subid == 999999){
                         dataUrl = '/japi/qiye/contact/blacklist';
@@ -83,6 +83,17 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                 init();
             });
 
+            };
+
+
+            /*成员状态 下拉列表*/
+            $scope.status = {
+                isopen: false
+            };
+            $scope.toggleDropdown = function($event) {
+                $event.preventDefault();
+                $event.stopPropagation();
+                $scope.status.isopen = !$scope.status.isopen;
             };
 
 
@@ -112,11 +123,11 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                     $scope.maxSize = size;
                     console.log($scope.totalItems, currentPage, size)
                 };
-                var refreshContacts = $scope.refreshContacts = function(page, size, status){
+                var refreshContacts = $scope.refreshContacts = function(page, size, num){
                     // 拼装GET链接
                     var dataUrl = '/japi/qiye/contact/list/bytag?id=' + newNode.subid + "&size="+ size +"&page=" + page;
-                    if(status){
-                        dataUrl = '/japi/qiye/contact/list/bytag?id=' + newNode.subid + "&size="+ size +"&page=" + page +"&status=" + status.num;
+                    if(num >= 0){
+                        dataUrl = '/japi/qiye/contact/list/bytag?id=' + newNode.subid + "&size="+ size +"&page=" + page +"&status=" + num;
                     }
                     $http.get(dataUrl).success(function(data) {
                         $scope.contacts = data.items;
@@ -137,8 +148,6 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                 });
 
             };
-
-
 
 
             $scope.remindInfor = function(data){
@@ -178,71 +187,6 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                 $scope.tabStatus=!$scope.tabStatus;
             };
 
-          /*  $scope.removeTag = function(index,id){
-                $scope.tagsListAll.splice(index,1);
-                $http({
-                    method: 'POST',
-                    url: '/japi/qiye/contacttag/delete',
-                    data: $.param({
-                        id: id
-                    }),
-                    headers:{'Content-Type': 'application/x-www-form-urlencoded'}
-                }).success(function(data){
-                    if(data.success){
-                        console.log(data);
-                    }
-                })
-            };
-*/
-          /*  $scope.editTag = function(data){
-                prompt({
-                    title: '输入标签名',
-                    input: true,
-                    value: data.name,
-                    "buttons":[
-                        {label:'取消',cancel:true},
-                        {label:'修改',primary:true}
-                    ]
-                }).then(function(name){
-                    data.name = name;
-                    $http({
-                        method: 'POST',
-                        url: '/japi/qiye/contacttag/update',
-                        data: $.param({
-                            name: data.name,
-                            id: data.id
-                        }),
-                        headers:{'Content-Type': 'application/x-www-form-urlencoded'}
-                    }).success(function(data){
-
-                    })
-                })
-
-            }
-            $scope.addTag = function(newTag){
-                // if(!newtag) return;
-                var tmp = {name:newTag};
-                $scope.tagsListAll.push(tmp);
-                $http({
-                    method: 'POST',
-                    url: '/japi/qiye/contacttag/create',
-                    data: $.param({
-                        name: newTag
-                    }),
-                    headers:{'Content-Type': 'application/x-www-form-urlencoded'}
-                }).success(function(data){
-                    if(data.success){
-                        var len = $scope.tagsListAll.length -1;
-                        $scope.tagsListAll[len].id = data.id;
-                        $scope.newTag = null;
-                    }else{
-                        console.log(data)
-                    }
-                })
-
-            };
-*/
-
             $scope.epdEditContact = function(contactId, userData) {
                 // console.log(contactId);
 
@@ -269,6 +213,7 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                     $scope.userDepartments = userDepartments;
                     // console.log(userDepartments);
                 });
+
                 // 显示
                 // $(".panel-box").animate({right:"0"},500);
             };
@@ -324,19 +269,45 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                         };
                     };
                 }
-                $scope.userTagsModel= tagsRemind;
+                $scope.userTagsModel = (tagsRemind.length != 0) ? tagsRemind : null;
             };
+
+            //转换tagsName--->id
+            // $scope.chkTagsModel = function(arr){
+            //     var tmp = [];
+            //     for (var i = 0;i < $scope.tagsListAll.length ; i++) {
+            //         console.log($scope.tagsListAll[i].id,tmp);
+            //         for (var j = arr.length - 1; j >= 0; j--) {
+            //             if($scope.tagsListAll[i].name == arr[j]){
+            //                 tmp.push($scope.tagsListAll[i].id);
+
+            //             }
+            //         };
+
+            //     };
+            //     $scope.userTagsModelId = tmp;           
+            // };
 
             // 获取所有标签
             $scope.tagsList = function(){
-                var tagsUrl = '/japi/qiye/contacttag/list';
+                var tagsUrl = '/japi/qiye/contacttag/list',
+                    objTags = {};
                 $http.get(tagsUrl).success(function(data){
                     var tagsRemind = [];
-                    for (var i = data.items.length - 1; i >= 0; i--) {
+                    for (var i = 0;i < data.items.length ; i++) {
+                        var tmp = {},
+                            name = data.items[i].name,
+                            id = data.items[i].id;
+                        tmp = {
+                                'id': id,
+                                'name': name
+                            }
+                        objTags[id] = tmp;
                         tagsRemind.push(data.items[i].name);
                     };
                     $scope.tagsRemind = tagsRemind;
                     $scope.tagsListAll = data.items;
+                    $scope.objTags = objTags;
                 })
             };
               
@@ -363,7 +334,7 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                         data: $.param({
                             userId: id,
                             name: $scope.userTagsModel[i],
-                            clear: $scope.tagAction
+                            clear: false
                         }),
                         headers: {'Content-Type': 'application/x-www-form-urlencoded'}
                     }).success(function(data){
@@ -372,54 +343,27 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                 };
             }
 
-            $scope.isDirtyUserTag = function(){
-                // $scope.tagAction = false;
-                console.log($scope.userTagsModel)
-                // function dirtyUserTag(newValue, oldValue, scope) {
-                //     alert(newValue, oldValue);
-                //   // $scope.tagAction = newValue > oldValue ? false : true;
-                //   // if(newValue != oldValue)  $scope.updateUserTag(id);
-                // };
-                //  $scope.$watch('userTagsModel',function(v,old) {
-                //     $scope.tagAction = v.length > old.length ? false : true;
-                //     console.log(v,old,$scope.userTagsModel,$scope.tagAction);
-                // });
-            };
 
             
             // 修改用户详情
-            $scope.userUpdate = function(userinfo){
+            $scope.userUpdate = function(userInfo){
+
                 var url= '/japi/qiye/contact/update/test',
                     tmp,
                     user;
-                $scope.department_selected1 = $("#department option:selected").val();
-
-                // console.log($scope.department_selected1);
-                // $scope.updateUserTag(id);
-                // var data = $.param({
-                //         userId: $scope.userinfo.userId,
-                //         position: $scope.userinfo.position,
-                //         mobile: $scope.userinfo.mobile,
-                //         telephone: $scope.userinfo.telephone,
-                //         email: $scope.userinfo.email,
-                //         wxid: $scope.userinfo.wxid,
-                //         name: $scope.userinfo.name,
-                //         departmentId: $scope.department_selected1
-                //     });
-                // if(!$scope.userinfo.departments){delete data.departmentId}
-                // var url = '/japi/qiye/contact/update';
-                
-                tmp = angular.copy(userinfo);
-                delete tmp.departmentList;
-                delete tmp.tagList;
-                console.log(userinfo,tmp);
-                user = angular.toJson(tmp)
+                tmp = angular.toJson(userInfo);
+                 console.log(userInfo,tmp);
+                // $scope.userDirtyCity(userInfo);
+                user = {
+                    "departmentId": $scope.userDepartment.id,
+                    "data":tmp};    
                 $.ajax({
                     method: 'POST',
                     url: url,
-                    data: {departmentId: $scope.department_selected1,data:user},
+                    data: user,
                     success: function  (data) {
                         $scope.remindInfor(data);
+                        $scope.updateUserTag(userInfo.userId,$scope.userTagsModel);
                         $scope.department_selectedId=null;
                         $scope.isEditInfor = false;
                         $scope.refreshContacts(1,100);
@@ -553,20 +497,12 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                     $scope.remindInfor(tmp);
                 })
             };
-
-            $scope.statusParam = [
-                {"num":3,"name":"所有"},
-                {"num":2,"name":"已关注"},
-                {"num":1,"name":"未关注"},
-                {"num":0,"name":"禁用"}
-            ];
-
-            $scope.statusFilter = function(status){
-                console.log('0000',status.num);
-                if(status.num==3){
+            $scope.statusFilter = function(num){
+                console.log('0000',num);
+                if(num==3){
                     $scope.refreshContacts(1,100);
                 }else{
-                    $scope.refreshContacts(1,100,status);
+                    $scope.refreshContacts(1,100,num);
                 }
             }
 
@@ -574,6 +510,7 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
             $scope.createUser = function(){
                 $scope.departmentTree();
                 $scope.tagsList();
+                $scope.vm.value2 = null;
                 $modal.open({
                     templateUrl: 'createUser.html',
                     controller: 'ContactsModalController',
@@ -602,100 +539,172 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                 })
             };
 
-            // 设置用户属性 propertyItems
-            $scope.setProperty = function(){
-                $scope.propertySamples = [
-                        {
+            $scope.$on('onCitySelected',function(event,item){
+                var len = item.cn.length - 1;
+                $scope.userCity = null;
+            });
+            $scope.userDirtyCity = function(data){
+                 if($scope.userCity){
+                    data.city = angular.copy($scope.userCity);
+                    $scope.userCity = null;
+                }               
+            }
+
+
+            $scope.dateFormat = function(userinfo,key,date){
+                Date.prototype.toHyphenDateString = function() { 
+                    var year = this.getFullYear(); 
+                    var month = this.getMonth() + 1; 
+                    var date = this.getDate(); 
+                    if (month < 10) { month = "0" + month; } 
+                    if (date < 10) { date = "0" + date; } 
+                    var hours = this.getHours();
+                    var mins = this.getMin
+                    var mins = this.getMinutes();
+                    var second = this.getSeconds();
+                    return year + "-" + month + "-" + date + " " + hours + ":" + mins + ":" + second;
+                };
+               date = date.toHyphenDateString();
+               userinfo[key] = date;
+               // console.log(date,userInfo[key]);
+
+            };
+            // 设置用户属性检查 propertyItems
+
+
+            $scope.propertySamples = {
+                        'gender':{
                             'key':'gender',
                             'label':'性别',
+                            'type': 'select',
+                            'sub_button':['男','女','无'],
                             'required':false
                         },
-                        {
-                            'key':'birthdate',
-                            'label':'出生日期',
-                            'required':false
-                        },
-                        {
-                            'key':'idcard',
-                            'label':'身份证号',
-                            'required':false
-                        },
-                        {
+                        'city':{
                             'key':'city',
                             'label':'城市',
+                            'type':'city',
                             'required':false
                         },
-                        {
-                            'key':'educational',
-                            'label':'学历',
+                        'citizenshipNumber':{
+                            'key':'citizenshipNumber',
+                            'label':'身份证',
                             'required':false
                         },
-                        {
-                            'key':'specialty',
+                        'birthday':{
+                            'key':'birthday',
+                            'label':'出生日期',
+                            'type':'date',
+                            'required':false
+                        },
+                        'university':{
+                            'key':'university',
+                            'label':'毕业院校',
+                            'required':false
+                        },
+                        'graduateddate':{
+                            'key':'graduateddate',
+                            'label':'毕业日期',
+                            'type':'date',
+                            'required':false
+                        },
+                        'major':{
+                            'key':'major',
                             'label':'专业方向',
                             'required':false
                         },
-                        {
-                            'key':'telephone',
-                            'label':'固定电话',
+                        'degree':{
+                            'key':'degree',
+                            'label':'学历',
+                            'type': 'select',
+                            'sub_button': ['高中','本科','硕士','博士','博士后','其他'],
                             'required':false
                         },
-                        {
+                        'staffStatus':{
+                            'key':'staffStatus',
+                            'label':'员工状态',
+                            'type': 'select',
+                            'sub_button': ['在职','离职','实习生'],
+                            'required':false
+                        },
+                        'entryTime':{
+                            'key':'entryTime',
+                            'label':'到职日',
+                            'type': 'date',
+                            'required':false
+                        },
+                        'dimissionTime':{
+                            'key':'dimissionTime',
+                            'label':'离职日',
+                            'type': 'date',
+                            'required':false
+                        },
+                        'contactSignTime':{
+                            'key':'contactSignTime',
+                            'label':'合同签订日',
+                            'type': 'date',
+                            'required':false
+                        },
+                        'contactExpireTime':{
+                            'key':'contactExpireTime',
+                            'label':'合同到期日',
+                            'type': 'date',
+                            'required':false
+                        },
+                        'confidentialityAgreement':{
+                            'key':'confidentialityAgreement',
+                            'label':'保密协议',
+                            'type':'checkbox',
+                            'required':false
+                        },
+                        'trainingAgreement':{
+                            'key':'trainingAgreement',
+                            'label':'培训协议',
+                            'type':'checkbox',
+                            'required':false
+                        },
+                        'homePhone':{
+                            'key':'homePhone',
+                            'label':'家庭电话',
+                            'required':false
+                        },
+                        'registerAddress':{
+                            'key':'registerAddress',
+                            'label':'户籍地址',
+                            'required':false
+                        },
+                        'address':{
                             'key':'address',
-                            'label':'联系地址',
+                            'label':'现居住地址',
                             'required':false
                         },
-                        {
-                            'key':'zipcode',
-                            'label':'邮政编码',
+                        'postalCode':{
+                            'key':'postalCode',
+                            'label':'邮编',
                             'required':false
                         },
-                        {
-                            'key':'company',
-                            'label':'工作单位',
+                        'fathar':{
+                            'key':'fathar',
+                            'label':'父亲',
                             'required':false
                         },
-                        {
-                            'key':'hospital',
-                            'label':'医院',
+                        'mother':{
+                            'key':'mother',
+                            'label':'母亲',
                             'required':false
                         },
-                        {
-                            'key':'hospitallevel',
-                            'label':'医院等级',
+                        'contactNumber':{
+                            'key':'contactNumber',
+                            'label':'联系电话',
                             'required':false
                         },
-                        {
-                            'key':'departments',
-                            'label':'科室',
-                            'required':false
-                        },
-                        {
-                            'key':'jobtitle',
-                            'label':'职称',
-                            'required':false
-                        },
-                        {
-                            'key':'administrative',
-                            'label':'行政职务',
-                            'required':false
-                        },
-                        {
-                            'key':'doctorid',
-                            'label':'医师资格证号',
-                            'required':false
-                        },
-                        {
-                            'key':'doctorcode',
-                            'label':'医师执业证书编码',
-                            'required':false
-                        },
-                        {
+                        'custompro':{
                             'key':'custompro',
                             'label':'自定义',
                             'required':false
                         }
-                    ];
+            };
+            $scope.setProperty = function(){
                 $modal.open({
                     templateUrl: 'userProperty.html',
                     controller: 'ContactsModalController',
@@ -703,6 +712,8 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                     scope: $scope
                 })
             };
+
+
 
             $scope.remove = function(){
                 var ids = [],
@@ -817,7 +828,6 @@ var contact_module = angular.module('epdApp.contacts', ['ngRoute', 'ui.bootstrap
                             $scope.isShowUserBlack = true;
                         }
                     };
-                    console.log(data,$scope.isShowUserBlack)
                 })
             };
 
@@ -853,11 +863,12 @@ contact_module
             $scope.saveContact = function(){
                 var url = '/japi/qiye/contact/test',
                     tmp;
+                // $scope.userDirtyCity($scope.newUser);
                 tmp = angular.toJson($scope.newUser);
                 $.ajax({
                     method: 'POST',
                     url: url,
-                    data: {departmentId:$scope.department_selectedId,data:tmp},
+                    data: {departmentId:$scope.department_selectedNewId,data:tmp},
                     success: function(data){
                         if(data.success){
                               notify({
@@ -1077,11 +1088,11 @@ contact_module
 
             // 增加自定义属性
             $scope.addProSample = function(moreProperty){
-                console.log(moreProperty);
+                // console.log(moreProperty);
                 if(moreProperty.key=="custompro") return;
                 var len = $scope.propertyItems.length + 1;
                 $scope.propertyItems.splice(len,0,moreProperty);
-                console.log($scope.propertyItems);
+                // console.log($scope.propertyItems);
             };
 
             $scope.addProSampleText = function (customProInput) {
@@ -1099,7 +1110,7 @@ contact_module
 
             // 删除自定义属性
             $scope.removeProSample = function  (index) {
-                index = index + 7;
+                index = index + 8;
                 $scope.propertyItems.splice(index,1)
             };
 
