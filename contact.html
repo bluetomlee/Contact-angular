@@ -78,22 +78,24 @@
                <li ng-repeat="contact in contacts" tid="{{contact.teamId}}" uid="{{contact.userId}}" uin="{{contact.id}}" class="js_list_member">
                    <div class="checkbox_node js_checkbox_help">
                         <input type="checkbox" class="js_checkbox checkbox" ng-click="showBatchEdit($event,contact)" ng-model="contact.checked" id="{{contact.userId}}"></div>
-                  <p class="member_propertyInfor" ng-show="isShowUserAvatar">
+            <!--       <p class="member_propertyInfor" ng-show="isShowUserAvatar">
                       <img ng-show="isShowUserAvatar" class="face js_lazy" ng-src="{{contact.avatar}}" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiyAhaARBgAAKIAWPFBn5WAAAAAElFTkSuQmCC">
-                   </p>
+                   </p> -->
 <!--                    <p class="name js_username"  ng-click="epdEditContact($event, contact)">{{contact.name}}</p>
                    <p class="account" title="{{contact.userId}}" ng-click="epdEditContact($event, contact)">{{contact.userId}}</p>
                    <p class="position" title="" ng-click="epdEditContact($event, contact)">{{contact.position}}</p>
                    <p class="phone" title="13761015357" ng-click="epdEditContact($event, contact)">{{contact.mobile}}</p>
                    <p class="mail">{{contact.email}}</p> -->
 <!--                    <p class="name js_username"  ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[0].key }}</p> -->
-                   <p class="member_propertyInfor" ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[0].key }}</p>
-                   <p class="member_propertyInfor" ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[1].key }}</p>
-                   <p class="member_propertyInfor" title="" ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[2].key }}</p>
-                   <p class="member_propertyInfor" title="13761015357" ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[3].key }}</p>
-                   <p class="member_propertyInfor">{{contact | getPropertyInfor:shownPropertyTitle[4].key }}</p>
-                   <p class="member_propertyInfor">{{contact | getPropertyInfor:shownPropertyTitle[5].key }}</p>
-                   <p class="member_propertyInfor" ng-show="shownPropertyTitle[6]">{{contact | getPropertyInfor:shownPropertyTitle[6].key }}</p>
+                   <p class="member_propertyInfor" ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[0].key:objTags }}
+                   <img ng-show="isShowUserAvatar" class="face js_lazy" ng-src="{{contact.avatar}}" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiyAhaARBgAAKIAWPFBn5WAAAAAElFTkSuQmCC">
+                   </p>
+                   <p class="member_propertyInfor" ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[1].key:objTags }}</p>
+                   <p class="member_propertyInfor"  ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[2].key:objTags }}</p>
+                   <p class="member_propertyInfor"  ng-click="epdEditContact($event, contact)">{{contact | getPropertyInfor:shownPropertyTitle[3].key:objTags }}</p>
+                   <p class="member_propertyInfor">{{contact | getPropertyInfor:shownPropertyTitle[4].key:objTags }}</p>
+                   <p class="member_propertyInfor">{{contact | getPropertyInfor:shownPropertyTitle[5].key:objTags }}</p>
+                   <p class="member_propertyInfor" ng-show="shownPropertyTitle[6]">{{contact | getPropertyInfor:shownPropertyTitle[6].key:objTags }}</p>
                    <p class="state">{{contact.status==1?"未关注":""}}{{contact.status==0?"禁用":""}}{{contact.status==2?"已关注":""}}</p>
                </li>
            </ul>
@@ -138,7 +140,7 @@
                     </label>
                       <span class="itemRequired">{{propertyA.key | getPropertyType:propertyA.key}}</span>
                 </li>
-                <li class="item" ng-repeat="propertyB in propertyItems.slice(4,7)">
+                <li class="item" ng-repeat="propertyB in propertyItems.slice(4,8)">
                     <label class="propertyChkboxA">
                      <input type="checkbox" ng-model="propertyB.shown">
                       {{propertyB.label}}
@@ -154,7 +156,7 @@
                         </label> 
                     </div>
                 </li>
-                <li class="item" ng-repeat="propertyC in propertyItems.slice(7)" ng-mouseover="proEdit=true" ng-mouseout="proEdit=false" >
+                <li class="item repeat-animate" ng-repeat="propertyC in propertyItems.slice(8)" ng-mouseover="proEdit=true" ng-mouseout="proEdit=false" >
                     <label class="propertyChkboxA">
                      <input type="checkbox" ng-model="propertyC.shown">
                       {{propertyC.label}}
@@ -171,10 +173,12 @@
                     </div>  
                       <i class="fa fa-trash"  ng-show="proEdit" ng-click="removeProSample($index)"></i>
                 </li>
-                <select class="moreProperty" ng-options="sample.label for sample in propertySamples" ng-model="moreProperty" ng-change="addProSample(moreProperty)">
+                
+                <select class="moreProperty" ng-options="key.label for (label,key) in propertySamples" ng-model="moreProperty" ng-change="addProSample(moreProperty)">
                   <option value="">+添加属性</option>
                   </select>
-                  <input type="text" ng-show="moreProperty.key=='custompro'" ng-model="customProInput" placeholder="请输入文本">
+                  
+                  <input type="text" class="" ng-show="moreProperty.key=='custompro'" ng-model="customProInput" placeholder="请输入文本">
                   <button class="btn btn-primary btn-xs" ng-show="moreProperty.key=='custompro'" ng-click="addProSampleText(customProInput)">添加</button>
             </ul>
             <button class="btn btn-primary btn-sm" ng-click="saveProSample()">保存</button>
@@ -189,12 +193,12 @@
       <!-- 新建用户模板   -->
    <div>
       <script type="text/ng-template" id="createUser.html">
-      <form role="form" id="createUser" name="createUserForm" novalidate="">
+      <div id="createUser">
          <div class="modal-header">
                   <h4 class="modal-title center">新建成员</h4>
                </div>
                <div class="modal-body">
-                  <form action="" role="form" class="create_user" name="createContact">
+                  <form  role="form" class="create_user" name="createContact">
                      <div class="create_user_head clearfix">
                         <div class="user_avatar">
                            <img width="80" height="80" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiyAhaARBgAAKIAWPFBn5WAAAAAElFTkSuQmCC" alt="">
@@ -204,8 +208,9 @@
                               <input type="text" class="form-control" ng-model="newUser.name" required placeholder="姓名">
                            </div>
                         <div class="form-group">
-                               <select class="form-group" ng-model="department_selectedId">
-                                   <option ng-selected="userDepartment.id==m.id" value="{{m.id}}" ng-repeat="m in userDepartments" >{{(m.level)==5?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==4?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==3?'&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==1?m.name:'&nbsp;&nbsp;&nbsp;&nbsp;'+m.name}}
+                               <select class="form-control" ng-model="department_selectedNewId">
+                                  <option value="">请选择</option>
+                                   <option value="{{m.id}}" ng-repeat="m in userDepartments" >{{(m.level)==5?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==4?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==3?'&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==1?m.name:'&nbsp;&nbsp;&nbsp;&nbsp;'+m.name}}
                                    </option>
                                </select>
 
@@ -240,11 +245,23 @@
                      <!-- 其他属性信息 -->
                      <div class="create_user_other">
                         <h5 class="create_user_tt"><span class="glyphicon glyphicon-exclamation-sign"></span>其他属性信息(选填)</h5>
-                        <div class="form-group" data-drop="true" ng-repeat="propertyC in propertyItems.slice(7) | filter:{shown:true}">
-                           <label>{{propertyC.label}}</label>
-                           <input type="text" class="form-control" ng-model="newUser[propertyC.key]" required="{{propertyC.required}}">
+                        <div class="form-group" data-drop="true" ng-repeat="propertyC in propertyItems.slice(8)">
+                           <div><label>{{propertyC.label}}</label></div>
+                           <input type="text" ng-show="(propertyC | getPropertyInput:'text':propertySamples)" ng-model="newUser[propertyC.key]" class="form-control">
+
+                           <select class="form-control" ng-show="(propertyC | getPropertyInput:'select':propertySamples)" ng-options="m for m in (propertyC | getPropertyInput:'select':propertySamples)" ng-model="newUser[propertyC.key]">
+                                 <option value="">请选择</option>
+                           </select>
+                           
+                               <input style="width:200px;" type="date" ng-show="(propertyC | getPropertyInput:'date':propertySamples)=='date'" ng-model="newUser[propertyC.key]" ng-change="dateFormat(newUser,propertyC.key,newUser[propertyC.key])">
+                               <input type="checkbox" ng-model="newUser[propertyC.key]" ng-show="(propertyC | getPropertyInput:'checkbox':propertySamples)=='checkbox'" class="checkbox">
+                           <div class="city" ng-show="(propertyC | getPropertyInput:'city':propertySamples)=='city'">
+                                <city-select ng-model="newUser.city"></city-select>
+                           </div>
+
+                           <!--<input type="text" class="form-control" ng-model="newUser[propertyC.key]" required="{{propertyC.required}}">-->
                         </div>
-                      <div class="form-group" data-drop="true" jqyoui-draggable>
+                      <div class="form-group" data-drop="true">
                       <label for="">标签</label>
                       <div class="form-group tagsList">
                               <input type="text" ui-select2="vm.option2" ng-model="vm.value2" style="width: 100%"/>
@@ -269,10 +286,10 @@
                      </div>
                   </form>
                <div class="modal-footer">
-                  <button class="btn btn-primary" ng-click="saveContact()" ng-disabled="createUserForm.$invalid">保存</button>
+                  <button class="btn btn-primary" ng-click="saveContact()" ng-disabled="createContact.$invalid">保存</button>
                    <!--<button class="btn btn-primary" id="saveContactNew" ng-click="saveContactNew()">保存并添加下一个</button> -->
                </div> 
-      </form>           
+      </div>           
       </script>
    </div>
 
@@ -381,7 +398,7 @@
           <i class="fa fa-close" title="关闭" ng-click="isShowUserInfo = !isShowUserInfo"></i>
       </div>
        <div class="apps-panel-body">
-           <form class="info" role="form" ng-submit="userUpdate(userinfo)">
+           <div class="info" role="form"  name="updateUser">
                <div class="u_info">
                    <div class="u_top">
                        <div class="item clearfix">
@@ -402,7 +419,7 @@
                                <div class="u_identy">{{userinfo.identy}}</div>
                                <div class="u_status">{{userinfo.status==1?"未关注":""}}{{userinfo.status==0?"禁用":""}}{{userinfo.status==2?"已关注":""}}</div>
                            </div>
-                           <input class="u_saveInfor" type="submit" ng-show="isEditInfor" value="保存" />
+                           <div class="u_saveInfor" ng-click="userUpdate(userinfo)" ng-disabled="updateUser.$invalid" ng-show="isEditInfor">保存</div>
                        </div>
                    </div>
                    <div class="u_bottom">
@@ -458,21 +475,22 @@
                            <div class="item-left u_info_title">部门</div>
                            <div class="item-right u_info_content" ng-show="!isEditInfor">{{userDepartment.name}}</div>
                            <div class="form-group department" ng-show="isEditInfor" id="department">
-                               <select class="form-group" ng-model="userDepartment.id">
-                                  <!--<option  val编辑ue="userDepartment.id">{{userDepartment.name}}</option>-->
+                               <select ng-required="true" class="" ng-model="userDepartment.id" name="user_department">
+                                  <option  value="">请选择</option>
                                    <option ng-selected="userDepartment.id==m.id" value="{{m.id}}" ng-repeat="m in userDepartments" >{{(m.level)==5?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==4?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==3?'&nbsp;&nbsp;&nbsp;&nbsp;':''}} {{(m.level)==1?m.name:'&nbsp;&nbsp;&nbsp;&nbsp;'+m.name}}
                                    </option>
                                </select>
+                               <span class="error" ng-show="updateUser.user_department.$invalid && updateUser.user_department.$error">请填写部门</span>
                            </div>
 
                        </div>
                       <div class="u_tags item clearfix" ng-show="isEditInfor || userinfo.tagList">
-                         <div class="item-left u_info_title" ng-hide="isEditInfor ||userinfo.tagList.length==0">标签</div>
-                         <div class="item-right u_info_content" ng-show="!isEditInfor">
+                         <div class="item-left u_info_title" ng-show="isEditInfor || userinfo.tagList.length>0 || userTagsModel">标签</div>
+                         <div class="item-right u_info_content" ng-hide="isEditInfor">
                             <span ng-repeat="tag in userTagsModel" class="tag">{{tag}}</span>
                          </div>
-                         <div class="form-group hide" ng-show="isEditInfor">
-                            <input type="text" ui-select2="vm.option2" ng-model="userTagsModel" ng-change="" style="width: 62%"/>
+                         <div class="form-group u_info_content" ng-show="isEditInfor">
+                            <input type="text" ui-select2="vm.option2" ng-model="userTagsModel" style="width: 62%"/>
                                      <!--<input type="text" class="form-control tagInput" ng-model="contactTags1" ng-click="showTagsInput(contactTags1)" ng-change="showTagsInput(contactTags1)">
                                      <ul class="tagsReminds" ng-show="tagsRemidStatus">
                                        <li class="tagsRemind" ng-repeat="tag in tagsListAll | filter:tagsRemindInfor" ng-click="addTags(tag.id,tag.name)">{{tag.name}}</li>
@@ -482,14 +500,26 @@
                          </div>
 
                       </div>
-                      <div class="item clearfix" ng-repeat="propertyC in propertyItems.slice(7)" ng-show="isEditInfor || userinfo[propertyC.key]">
+
+                      <div class="item clearfix" ng-repeat="propertyC in propertyItems.slice(8)" ng-show="isEditInfor || userinfo[propertyC.key]">
                          <div class="item-left u_info_title" ng-hide="!(contact | getPropertyInfor:propertyC.key)">{{propertyC.label}} </div>
                          <div class="item-right u_info_content" ng-hide="isEditInfor">
-                            <span class="">{{userinfo[propertyC.key]}}</span>
+                            <span class="">{{userinfo[propertyC.key] | date : 'yyyy-MM-dd'}}</span>
                          </div>
                          <div class="form-group"  ng-show="isEditInfor">
-                               <div class="editInfor">                                   
-                               <input type="text" ng-model="userinfo[propertyC.key]" class="form-froup">
+                               <div class="editInfor">
+                                
+                                   <input type="text" ng-show="(propertyC | getPropertyInput:'text':propertySamples)" ng-model="userinfo[propertyC.key]" class="">
+
+                                   <select ng-show="(propertyC | getPropertyInput:'select':propertySamples)" ng-options="m for m in (propertyC | getPropertyInput:'select':propertySamples)" ng-model="userinfo[propertyC.key]">
+                                     <option value="">请选择</option>
+                                   </select>
+                                   <input type="date" ng-show="(propertyC | getPropertyInput:'date':propertySamples)=='date'" ng-model="userinfo[propertyC.key]" ng-change="dateFormat(userinfo,propertyC.key,userinfo[propertyC.key])">
+
+                                   <div class="city" ng-show="(propertyC | getPropertyInput:'city':propertySamples)=='city'" style="width: 253px;margin-left: 99px;">
+                                        <city-select ng-model="userinfo[propertyC.key]"></city-select>
+                                   </div>
+                                   <input type="checkbox" ng-model="userinfo[propertyC.key]" ng-show="(propertyC | getPropertyInput:'checkbox':propertySamples)=='checkbox'" class="checkbox">
                                </div>
                           </div>
                       </div>
@@ -497,7 +527,7 @@
                    </div>
 
                </div>
-           </form>
+           </div>
        </div>
 
       <div class="apps-panel-footer">
